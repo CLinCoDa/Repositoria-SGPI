@@ -1,7 +1,20 @@
-blinker==1.9.0
-click==8.3.1
+# Flask y dependencias básicas
 Flask==2.3.3
-itsdangerous==2.2.0
-Jinja2==3.1.2
-MarkupSafe==3.0.3
+
 Werkzeug==2.3.7
+Jinja2==3.1.2
+itsdangerous==2.1.2
+click==8.1.7
+
+# Variables de entorno
+python-dotenv==1.0.0
+
+# Formularios (opcional pero recomendado)
+#Flask-WTF==1.1.1
+#WTForms==3.0.1
+
+# Sesiones
+#Flask-Session==0.5.0
+
+# CORS si tienes API
+#Flask-CORS==4.0.0
