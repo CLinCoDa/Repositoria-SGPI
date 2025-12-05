@@ -1,0 +1,39 @@
+.header {
+    background-color: white;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    padding: 15px 0;
+    margin-bottom: 20px;
+}
+
+/* Estilos personalizados para el carrusel */
+.carousel-indicators button {
+    width: 12px !important;
+    height: 12px !important;
+    border-radius: 50% !important;
+    margin: 0 5px !important;
+}
+
+.carousel-control-prev, .carousel-control-next {
+    width: 5% !important;
+}
+
+.carousel-caption {
+    background: rgba(0,0,0,0.5);
+    border-radius: 10px;
+    padding: 15px;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .carousel-inner {
+        height: 250px !important;
+    }
+    
+    .carousel-caption .row > div {
+        margin-bottom: 10px;
+    }
+    
+    .carousel-caption h4 {
+        font-size: 1.2rem;
+    }
+}

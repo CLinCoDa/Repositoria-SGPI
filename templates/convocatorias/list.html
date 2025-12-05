@@ -1,0 +1,622 @@
+{% extends "base.html" %}
+
+{% block content %}
+
+<div class="container-fluid py-4">
+    <!-- Encabezado con botón -->
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2 class="mb-0">
+            <i class="fas fa-calendar-week text-primary me-2"></i>
+            Gestión de Convocatorias
+        </h2>
+        <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#crearConvocatoriaModal">
+            <i class="fas fa-plus-circle me-2"></i>
+            Nueva Convocatoria
+        </button>
+    </div>
+    
+    <!-- Filtros -->
+    <div class="card shadow mb-4">
+        <div class="card-header py-3 d-flex justify-content-between align-items-center">
+            <h6 class="m-0 font-weight-bold text-primary">
+                <i class="fas fa-filter me-2"></i>Filtros de Búsqueda
+            </h6>
+            <button id="reset-filters" class="btn btn-sm btn-outline-secondary">
+                <i class="fas fa-redo-alt me-1"></i>Restablecer
+            </button>
+        </div>
+        <div class="card-body">
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-3 mb-3">
+                        <label for="year-filter" class="form-label">Año de la convocatoria</label>
+                        <select id="year-filter" class="form-select">
+                            {% for year in range(2025, 2021, -1) %}
+                            <option value="{{ year }}" {% if year == 2025 %}selected{% endif %}>{{ year }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                                    
+                    <div class="col-md-3 mb-3">
+                        <label for="type-filter" class="form-label">Tipo de convocatoria</label>
+                        <select id="type-filter" class="form-select">
+                            <option value="all">Todos los tipos</option>
+                            <option value="normal">Normal</option>
+                            <option value="extraordinaria">Extraordinaria</option>
+                        </select>
+                    </div>
+                    
+                    <div class="col-md-3 mb-3">
+                        <label for="status-filter" class="form-label">Estado</label>
+                        <select id="status-filter" class="form-select">
+                            <option value="all">Todos los estados</option>
+                            <option value="planificada">Planificada</option>
+                            <option value="registro">Registro</option>
+                            <option value="prevalidacion">Pre-validación</option>
+                            <option value="validacion">Validación</option>
+                            <option value="finalizada">Finalizada</option>
+                        </select>
+                    </div>
+                    
+                    <div class="col-md-3 mb-3">
+                        <label for="search-filter" class="form-label">Buscar</label>
+                        <input type="text" id="search-filter" class="form-control" placeholder="Buscar convocatoria...">
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Información de resultados -->
+    <div class="alert alert-info d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <i class="fas fa-info-circle me-2"></i>
+            <span id="count-message">Mostrando <span id="count">0</span> convocatorias</span>
+        </div>
+        <small>Las convocatorias del año actual se muestran por defecto</small>
+    </div>
+    
+    <!-- Tabla de convocatorias -->
+    <div class="card shadow">
+        <div class="card-header py-3">
+            <h6 class="m-0 font-weight-bold text-primary">
+                <i class="fas fa-list me-2"></i>Lista de Convocatorias
+            </h6>
+        </div>
+        <div class="card-body">
+            <div class="table-responsive">
+                <table class="table table-hover" id="convocatorias-table">
+                    <thead class="table-dark">
+                        <tr>
+                            <th width="20%">Convocatoria</th>
+                            <th width="25%">Fecha de inicio</th>
+                            <th width="25%">Fecha de finalización</th>
+                            <th width="15%">Tipo</th>
+                            <th width="15%">Estado</th>
+                             <th width="15%" class="text-center">Acciones</th>
+                        </tr>
+                    </thead>
+                    <tbody id="convocatorias-body">
+                        <!-- Las convocatorias se cargarán aquí con JavaScript -->
+                    </tbody>
+                </table>
+            </div>
+            
+            <!-- Mensaje cuando no hay resultados -->
+            <div id="no-results-message" class="text-center py-5" style="display: none;">
+                <i class="fas fa-folder-open fa-3x text-muted mb-3"></i>
+                <h5 class="text-muted">No se encontraron convocatorias</h5>
+                <p class="text-muted">Intenta con otros filtros de búsqueda</p>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal fade" id="crearConvocatoriaModal" tabindex="-1" aria-labelledby="crearConvocatoriaModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header bg-primary text-white">
+                    <h5 class="modal-title" id="crearConvocatoriaModalLabel">
+                        <i class="fas fa-plus-circle me-2"></i>Crear Nueva Convocatoria
+                    </h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="formCrearConvocatoria">
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label for="tipo_convocatoria" class="form-label">Tipo de Convocatoria *</label>
+                                <select class="form-select" id="tipo_convocatoria" name="tipo_convocatoria" required>
+                                    <option value="">Seleccionar tipo</option>
+                                    <option value="normal">Normal</option>
+                                    <option value="extraordinaria">Extraordinaria</option>
+                                </select>
+                                <div class="form-text">
+                                    <small>
+                                        <strong>Normal:</strong> Incluye trimestre (T1, T2, T3, T4)<br>
+                                        <strong>Extraordinaria:</strong> Solo incluye el año
+                                    </small>
+                                </div>
+                            </div>
+                            
+                            <div class="col-md-6 mb-3">
+                                <label for="anio" class="form-label">Año *</label>
+                                <input type="number" class="form-control" id="anio" name="anio" 
+                                       min="2020" max="2030" value="{{ current_year }}" required>
+                            </div>
+                        </div>
+                        
+                        <div class="row" id="trimestreContainer" style="display: none;">
+                            <div class="col-md-6 mb-3">
+                                <label for="trimestre" class="form-label">Trimestre *</label>
+                                <select class="form-select" id="trimestre" name="trimestre">
+                                    <option value="">Seleccionar trimestre</option>
+                                    <option value="T1">Primer Trimestre (T1)</option>
+                                    <option value="T2">Segundo Trimestre (T2)</option>
+                                    <option value="T3">Tercer Trimestre (T3)</option>
+                                    <option value="T4">Cuarto Trimestre (T4)</option>
+                                </select>
+                            </div>
+                        </div>
+                        
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label for="fecha_inicio" class="form-label">Fecha de Inicio *</label>
+                                <input type="date" class="form-control" id="fecha_inicio" name="fecha_inicio" required>
+                            </div>
+                            
+                            <div class="col-md-6 mb-3">
+                                <label for="fecha_fin" class="form-label">Fecha de Finalización *</label>
+                                <input type="date" class="form-control" id="fecha_fin" name="fecha_fin" required>
+                            </div>
+                        </div>
+                        
+                        <div class="row">
+                            <div class="col-md-12 mb-3">
+                                <label for="descripcion" class="form-label">Descripción (Opcional)</label>
+                                <textarea class="form-control" id="descripcion" name="descripcion" rows="3" 
+                                          placeholder="Descripción de la convocatoria..."></textarea>
+                            </div>
+                        </div>
+                        
+                        <div class="alert alert-info">
+                            <small>
+                                <i class="fas fa-info-circle me-1"></i>
+                                <strong>Recordatorio:</strong> Los estados de la convocatoria se gestionan automáticamente según las fechas:
+                                <ul class="mb-0 mt-2">
+                                    <li><strong>Planificada:</strong> Antes de la fecha de inicio</li>
+                                    <li><strong>Registro:</strong> Durante el período de fechas</li>
+                                    <li><strong>Finalizada:</strong> Después de la fecha de finalización</li>
+                                </ul>
+                            </small>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                    <button type="button" class="btn btn-primary" id="btnGuardarConvocatoria">
+                        <i class="fas fa-save me-1"></i>Guardar Convocatoria
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    // Datos de ejemplo para las convocatorias
+    const convocatoriasData = [
+        {
+            id: 1,
+            year: 2023,
+            trimester: "T1",
+            type: "normal",
+            startDate: "2023-01-15",
+            endDate: "2023-02-28",
+            status: "finalizada"
+        },
+        {
+            id: 2,
+            year: 2023,
+            trimester: "T2",
+            type: "normal",
+            startDate: "2023-04-10",
+            endDate: "2023-05-25",
+            status: "validacion"
+        },
+        {
+            id: 3,
+            year: 2023,
+            trimester: null,
+            type: "extraordinaria",
+            startDate: "2023-06-01",
+            endDate: "2023-06-30",
+            status: "prevalidacion"
+        },
+        {
+            id: 4,
+            year: 2023,
+            trimester: "T3",
+            type: "normal",
+            startDate: "2023-07-15",
+            endDate: "2023-08-31",
+            status: "registro"
+        },
+        {
+            id: 5,
+            year: 2023,
+            trimester: "T4",
+            type: "normal",
+            startDate: "2023-10-01",
+            endDate: "2023-11-15",
+            status: "planificada"
+        },
+        {
+            id: 6,
+            year: 2022,
+            trimester: "T2",
+            type: "normal",
+            startDate: "2022-04-05",
+            endDate: "2022-05-20",
+            status: "finalizada"
+        },
+        {
+            id: 7,
+            year: 2022,
+            trimester: null,
+            type: "extraordinaria",
+            startDate: "2022-08-10",
+            endDate: "2022-09-10",
+            status: "finalizada"
+        },
+        {
+            id: 8,
+            year: 2022,
+            trimester: "T3",
+            type: "normal",
+            startDate: "2021-07-20",
+            endDate: "2021-08-30",
+            status: "finalizada"
+        }
+    ];
+
+    // Configuración inicial
+    document.addEventListener('DOMContentLoaded', function() {
+        // Establecer título de página
+        setPageTitle('Gestión de Convocatorias');
+        
+        // Configurar eventos de filtros
+        document.getElementById('year-filter').addEventListener('change', filterConvocatorias);
+        document.getElementById('type-filter').addEventListener('change', filterConvocatorias);
+        document.getElementById('status-filter').addEventListener('change', filterConvocatorias);
+        document.getElementById('search-filter').addEventListener('input', filterConvocatorias);
+        document.getElementById('reset-filters').addEventListener('click', resetFilters);
+        
+        // Inicializar con los filtros por defecto
+        filterConvocatorias();
+    });
+
+    // Función para obtener el estado como texto
+    function getStatusText(status) {
+        const statusMap = {
+            'planificada': 'Planificada',
+            'registro': 'Registro',
+            'prevalidacion': 'Pre-validación',
+            'validacion': 'Validación',
+            'finalizada': 'Finalizada'
+        };
+        return statusMap[status] || status;
+    }
+
+    // Función para obtener la clase CSS del estado
+    function getStatusClass(status) {
+        const statusClasses = {
+            'planificada': 'warning',
+            'registro': 'info',
+            'prevalidacion': 'primary',
+            'validacion': 'secondary',
+            'finalizada': 'success'
+        };
+        return statusClasses[status] || 'secondary';
+    }
+
+    // Función para obtener la clase CSS del tipo
+    function getTypeClass(type) {
+        return type === 'normal' ? 'primary' : 'warning';
+    }
+
+    // Función para obtener el texto del tipo
+    function getTypeText(type) {
+        return type === 'normal' ? 'Normal' : 'Extraordinaria';
+    }
+
+    // Función para formatear fecha
+    function formatDate(dateString) {
+        const date = new Date(dateString);
+        return date.toLocaleDateString('es-ES', {
+            year: 'numeric',
+            month: 'long',
+            day: 'numeric'
+        });
+    }
+
+    // Renderizar la tabla de convocatorias
+    function renderConvocatorias(convocatorias) {
+        const tbody = document.getElementById('convocatorias-body');
+        const countElement = document.getElementById('count');
+        const countMessage = document.getElementById('count-message');
+        const noResultsMessage = document.getElementById('no-results-message');
+        
+        // Limpiar tabla
+        tbody.innerHTML = '';
+        
+        // Actualizar contador
+        countElement.textContent = convocatorias.length;
+        countMessage.innerHTML = `Mostrando <span id="count">${convocatorias.length}</span> convocatorias`;
+        
+        // Mostrar mensaje si no hay resultados
+        if (convocatorias.length === 0) {
+            noResultsMessage.style.display = 'block';
+            return;
+        } else {
+            noResultsMessage.style.display = 'none';
+        }
+        
+        // Ordenar convocatorias: primero por año descendente, luego por trimestre
+        convocatorias.sort((a, b) => {
+            if (a.year !== b.year) return b.year - a.year;
+            
+            // Ordenar por trimestre (null para extraordinarias al final)
+            const trimesterOrder = { "T1": 1, "T2": 2, "T3": 3, "T4": 4, null: 5 };
+            return trimesterOrder[a.trimester] - trimesterOrder[b.trimester];
+        });
+        
+        // Generar filas de la tabla
+        convocatorias.forEach(convocatoria => {
+            const row = document.createElement('tr');
+            
+            // Formatear el nombre de la convocatoria según el tipo
+            let convocatoriaName = convocatoria.year;
+            if (convocatoria.type === 'normal' && convocatoria.trimester) {
+                convocatoriaName += ` ${convocatoria.trimester}`;
+            }
+            
+            row.innerHTML = `
+                <td>
+                    <div class="d-flex align-items-center">
+                        <div>
+                            <strong>${convocatoriaName}</strong>
+                            ${convocatoria.descripcion ? `<br><small class="text-muted">${convocatoria.descripcion.substring(0, 50)}${convocatoria.descripcion.length > 50 ? '...' : ''}</small>` : ''}
+                        </div>
+                    </div>
+                </td>
+                <td>${formatDate(convocatoria.startDate)}</td>
+                <td>${formatDate(convocatoria.endDate)}</td>
+                <td>
+                    <span class="badge bg-${getTypeClass(convocatoria.type)}">
+                        ${getTypeText(convocatoria.type)}
+                    </span>
+                </td>
+                 <td>
+                    <span class="badge bg-${getStatusClass(convocatoria.status)}">
+                        ${getStatusText(convocatoria.status)}
+                    </span>
+                </td>
+                <td class="text-center">
+                    <div class="btn-group" role="group">
+                        <button type="button" class="btn btn-sm btn-outline-primary" onclick="editarConvocatoria(${convocatoria.id})" title="Editar">
+                            <i class="fas fa-edit"></i>
+                        </button>
+                        <button type="button" class="btn btn-sm btn-outline-info" onclick="verDetalles(${convocatoria.id})" title="Ver detalles">
+                            <i class="fas fa-eye"></i>
+                        </button>
+                        <button type="button" class="btn btn-sm btn-outline-danger" onclick="eliminarConvocatoria(${convocatoria.id})" title="Eliminar">
+                            <i class="fas fa-trash"></i>
+                        </button>
+                    </div>
+                </td>
+            `;
+            
+            tbody.appendChild(row);
+        });
+
+        // Funciones para editar y eliminar (ejemplo básico)
+        function editarConvocatoria(id) {
+            // Aquí implementarías la lógica para editar
+            showAlert(`Editar convocatoria ${id} - Funcionalidad en desarrollo`, 'info');
+        }
+
+        function eliminarConvocatoria(id) {
+            if (confirm('¿Está seguro de eliminar esta convocatoria?')) {
+                const index = convocatoriasData.findIndex(c => c.id === id);
+                if (index !== -1) {
+                    convocatoriasData.splice(index, 1);
+                    filterConvocatorias();
+                    showAlert('Convocatoria eliminada exitosamente', 'success');
+                }
+            }
+        }
+    }
+
+    // Filtrar convocatorias según los criterios seleccionados
+    function filterConvocatorias() {
+        const yearFilter = document.getElementById('year-filter').value;
+        const typeFilter = document.getElementById('type-filter').value;
+        const statusFilter = document.getElementById('status-filter').value;
+        const searchFilter = document.getElementById('search-filter').value.toLowerCase();
+        
+        const filtered = convocatoriasData.filter(convocatoria => {
+            // Filtrar por año
+            if (yearFilter !== 'all' && convocatoria.year.toString() !== yearFilter) {
+                return false;
+            }
+            
+            // Filtrar por tipo
+            if (typeFilter !== 'all' && convocatoria.type !== typeFilter) {
+                return false;
+            }
+            
+            // Filtrar por estado
+            if (statusFilter !== 'all' && convocatoria.status !== statusFilter) {
+                return false;
+            }
+            
+            // Filtrar por búsqueda de texto
+            if (searchFilter) {
+                const convocatoriaName = convocatoria.type === 'normal' && convocatoria.trimester 
+                    ? `${convocatoria.year} ${convocatoria.trimester}`
+                    : convocatoria.year.toString();
+                
+                if (!convocatoriaName.toLowerCase().includes(searchFilter)) {
+                    return false;
+                }
+            }
+            
+            return true;
+        });
+        
+        renderConvocatorias(filtered);
+    }
+
+    // Restablecer todos los filtros
+    function resetFilters() {
+        document.getElementById('year-filter').value = new Date().getFullYear();
+        document.getElementById('type-filter').value = 'all';
+        document.getElementById('status-filter').value = 'all';
+        document.getElementById('search-filter').value = '';
+        filterConvocatorias();
+    }
+
+    // Mostrar/ocultar campo de trimestre según tipo de convocatoria
+document.getElementById('tipo_convocatoria').addEventListener('change', function() {
+    const trimestreContainer = document.getElementById('trimestreContainer');
+    const trimestreSelect = document.getElementById('trimestre');
+    
+    if (this.value === 'normal') {
+        trimestreContainer.style.display = 'block';
+        trimestreSelect.required = true;
+    } else {
+        trimestreContainer.style.display = 'none';
+        trimestreSelect.required = false;
+        trimestreSelect.value = '';
+    }
+});
+
+// Configurar fechas por defecto
+document.addEventListener('DOMContentLoaded', function() {
+    // Establecer fechas por defecto
+    const today = new Date();
+    const nextWeek = new Date(today);
+    nextWeek.setDate(today.getDate() + 7);
+    const nextMonth = new Date(today);
+    nextMonth.setMonth(today.getMonth() + 1);
+    
+    // Formatear fechas para input type="date"
+    const formatDateForInput = (date) => {
+        return date.toISOString().split('T')[0];
+    };
+    
+    document.getElementById('fecha_inicio').value = formatDateForInput(nextWeek);
+    document.getElementById('fecha_fin').value = formatDateForInput(nextMonth);
+    
+    // Configurar botón guardar
+    document.getElementById('btnGuardarConvocatoria').addEventListener('click', crearConvocatoria);
+    
+    // Limpiar formulario al abrir modal
+    const crearModal = document.getElementById('crearConvocatoriaModal');
+    crearModal.addEventListener('show.bs.modal', function() {
+        document.getElementById('formCrearConvocatoria').reset();
+        document.getElementById('trimestreContainer').style.display = 'none';
+        document.getElementById('anio').value = new Date().getFullYear();
+        document.getElementById('fecha_inicio').value = formatDateForInput(nextWeek);
+        document.getElementById('fecha_fin').value = formatDateForInput(nextMonth);
+    });
+});
+
+// Función para crear nueva convocatoria
+function crearConvocatoria() {
+    const form = document.getElementById('formCrearConvocatoria');
+    
+    if (!form.checkValidity()) {
+        // Mostrar mensajes de validación
+        form.classList.add('was-validated');
+        return;
+    }
+    
+    // Obtener datos del formulario
+    const tipo = document.getElementById('tipo_convocatoria').value;
+    const anio = parseInt(document.getElementById('anio').value);
+    const trimestre = tipo === 'normal' ? document.getElementById('trimestre').value : null;
+    const fechaInicio = document.getElementById('fecha_inicio').value;
+    const fechaFin = document.getElementById('fecha_fin').value;
+    const descripcion = document.getElementById('descripcion').value;
+    
+    // Determinar estado basado en fechas
+    const today = new Date();
+    const startDate = new Date(fechaInicio);
+    const endDate = new Date(fechaFin);
+    
+    let estado = 'planificada';
+    if (today >= startDate && today <= endDate) {
+        estado = 'registro';
+    } else if (today > endDate) {
+        estado = 'finalizada';
+    }
+    
+    // Crear nuevo objeto convocatoria
+    const nuevaConvocatoria = {
+        id: convocatoriasData.length + 1,
+        year: anio,
+        trimester: trimestre,
+        type: tipo,
+        startDate: fechaInicio,
+        endDate: fechaFin,
+        status: estado,
+        descripcion: descripcion || ''
+    };
+    
+    // Agregar a los datos
+    convocatoriasData.unshift(nuevaConvocatoria);
+    
+    // Cerrar modal
+    const modal = bootstrap.Modal.getInstance(document.getElementById('crearConvocatoriaModal'));
+    modal.hide();
+    
+    // Resetear formulario
+    form.reset();
+    form.classList.remove('was-validated');
+    
+    // Aplicar filtros actuales (para que aparezca en la lista si coincide)
+    filterConvocatorias();
+    
+    // Mostrar mensaje de éxito
+    showAlert('¡Convocatoria creada exitosamente!', 'success');
+}
+
+// Función para mostrar alertas
+function showAlert(message, type = 'info') {
+    // Crear elemento de alerta
+    const alertDiv = document.createElement('div');
+    alertDiv.className = `alert alert-${type} alert-dismissible fade show position-fixed`;
+    alertDiv.style.cssText = 'top: 20px; right: 20px; z-index: 1050; min-width: 300px;';
+    alertDiv.innerHTML = `
+        <i class="fas ${type === 'success' ? 'fa-check-circle' : 'fa-info-circle'} me-2"></i>
+        ${message}
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    `;
+    
+    // Agregar al documento
+    document.body.appendChild(alertDiv);
+    
+    // Auto-eliminar después de 5 segundos
+    setTimeout(() => {
+        if (alertDiv.parentNode) {
+            alertDiv.remove();
+        }
+    }, 5000);
+}
+</script>
+{% endblock %}
