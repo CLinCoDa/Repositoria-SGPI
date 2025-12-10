@@ -1,6 +1,6 @@
 # data_layer/database.py
 """
-Base de datos en memoria – mejorada para el prototipo SGPI
+Base de datos en memoria – prototipo SGPI
 Soporta: users, convocatorias, solicitudes
 """
 
@@ -24,24 +24,30 @@ class Database:
         # Cargar desde disco si corresponde
         if self.persist_to_disk:
             self._load_all()
-        else:
-            # no seed automático aquí: lo hará seed_data + init desde app.py
-            pass
 
-    # ----------------- USERS -----------------
+    # ----------------- HELPERS -----------------
     def _next_id(self, collection: List[Dict]) -> int:
         return max([item.get("id", 0) for item in collection], default=0) + 1
 
+    def _calc_estado(self, fecha_inicio: str, fecha_fin: str) -> str:
+        today = datetime.now().date()
+        inicio = datetime.fromisoformat(fecha_inicio).date()
+        fin = datetime.fromisoformat(fecha_fin).date()
+        if today < inicio:
+            return "planificada"
+        elif inicio <= today <= fin:
+            return "registro"
+        else:
+            return "finalizada"
+
+    # ----------------- USERS -----------------
     def add_user(self, user_data: Dict) -> Dict:
-        user = dict(user_data)  # copia para no mutar entrada
+        user = dict(user_data)
         user["id"] = self._next_id(self.users)
         now = datetime.now().isoformat()
         user.setdefault("created_at", now)
         user.setdefault("updated_at", now)
         user.setdefault("status", "activo")
-        # normalize boolean key names
-        if "is_active" in user and "status" not in user:
-            user["status"] = "activo" if user["is_active"] else "inactivo"
         self.users.append(user)
         if self.persist_to_disk:
             self._save_users()
@@ -49,7 +55,7 @@ class Database:
 
     def get_user_by_id(self, user_id: int) -> Optional[Dict]:
         return next((u for u in self.users if u["id"] == user_id), None)
-
+    
     def find_user_by_username(self, username: str) -> Optional[Dict]:
         return next((u for u in self.users if u.get("username") == username), None)
 
@@ -85,24 +91,35 @@ class Database:
         now = datetime.now().isoformat()
         conv.setdefault("created_at", now)
         conv.setdefault("updated_at", now)
+        # calcular estado automáticamente si no viene
+        if "estado" not in conv:
+            conv["estado"] = self._calc_estado(conv["fecha_inicio"], conv["fecha_fin"])
         self.convocatorias.append(conv)
         if self.persist_to_disk:
             self._save_convocatorias()
         return conv
 
-    def get_convocatoria_by_id(self, conv_id: int) -> Optional[Dict]:
+    def get_convocatoria(self, conv_id: int) -> Optional[Dict]:
         return next((c for c in self.convocatorias if c["id"] == conv_id), None)
     
-    def update_convocatoria(self, id, updates):
-        c = self.get_convocatoria(id)
+    def get_convocatoria_by_id(self, conv_id: int) -> Optional[Dict]:
+        return next((c for c in self.convocatorias if c["id"] == conv_id), None)
+
+    def update_convocatoria(self, conv_id: int, updates: Dict) -> Optional[Dict]:
+        c = self.get_convocatoria(conv_id)
         if not c:
             return None
         c.update(updates)
+        c["updated_at"] = datetime.now().isoformat()
+        if self.persist_to_disk:
+            self._save_convocatorias()
         return c
-    
-    def delete_convocatoria(self, id):
+
+    def delete_convocatoria(self, conv_id: int) -> bool:
         before = len(self.convocatorias)
-        self.convocatorias = [c for c in self.convocatorias if c["id"] != id]
+        self.convocatorias = [c for c in self.convocatorias if c["id"] != conv_id]
+        if self.persist_to_disk:
+            self._save_convocatorias()
         return len(self.convocatorias) < before
 
     # ----------------- SOLICITUDES -----------------
@@ -112,7 +129,6 @@ class Database:
         now = datetime.now().isoformat()
         sol.setdefault("created_at", now)
         sol.setdefault("updated_at", now)
-        # generar codigo simple si no existe
         if "codigo" not in sol:
             tipo = (sol.get("tipo") or "XX").upper()[:2]
             year = datetime.now().year
@@ -134,22 +150,7 @@ class Database:
             "last_updated": datetime.now().isoformat()
         }
 
-    def search(self, collection_name: str, query: Dict) -> List[Dict]:
-        col = getattr(self, collection_name, None)
-        if not isinstance(col, list):
-            return []
-        results = []
-        for item in col:
-            ok = True
-            for k, v in query.items():
-                if item.get(k) != v:
-                    ok = False
-                    break
-            if ok:
-                results.append(item)
-        return results
-
-    # ----------------- PERSISTENCIA SIMPLE -----------------
+    # ----------------- PERSISTENCIA -----------------
     def _load_all(self):
         self._load_users()
         self._load_convocatorias()
@@ -160,8 +161,6 @@ class Database:
         if f.exists():
             with open(f, "r", encoding="utf-8") as fh:
                 self.users = json.load(fh)
-        else:
-            self.users = []
 
     def _save_users(self):
         f = self.data_dir / "users.json"
@@ -173,8 +172,6 @@ class Database:
         if f.exists():
             with open(f, "r", encoding="utf-8") as fh:
                 self.convocatorias = json.load(fh)
-        else:
-            self.convocatorias = []
 
     def _save_convocatorias(self):
         f = self.data_dir / "convocatorias.json"
@@ -186,8 +183,6 @@ class Database:
         if f.exists():
             with open(f, "r", encoding="utf-8") as fh:
                 self.solicitudes = json.load(fh)
-        else:
-            self.solicitudes = []
 
     def _save_solicitudes(self):
         f = self.data_dir / "solicitudes.json"
@@ -195,7 +190,7 @@ class Database:
             json.dump(self.solicitudes, fh, ensure_ascii=False, indent=2)
 
 
-# Singleton
+# ----------------- SINGLETON -----------------
 _db_instance: Optional[Database] = None
 
 def get_database(persist_to_disk: bool = False, data_dir: str = "data") -> Database:
@@ -204,6 +199,8 @@ def get_database(persist_to_disk: bool = False, data_dir: str = "data") -> Datab
         _db_instance = Database(persist_to_disk=persist_to_disk, data_dir=data_dir)
     return _db_instance
 
-# alias
+# Alias para usar en todo el proyecto
 db = get_database()
+
+
 

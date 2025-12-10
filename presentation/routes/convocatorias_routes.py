@@ -1,74 +1,70 @@
-from flask import Blueprint, request, session, render_template,redirect, jsonify, url_for
-from data_layer.database.database import db
-from business_logic.utils.password_utils import verify_password
+# routes/convocatorias_routes.py 
 
-convocatoria_bp = Blueprint("convocatoria", __name__, url_prefix="/convocatoria")
+from flask import Blueprint, request, jsonify, render_template
+from datetime import datetime
+from business_logic.services.convocatorias_service import (
+    listar_convocatorias,
+    crear_convocatoria,
+    eliminar_convocatoria
+)
 
+convocatoria_bp = Blueprint("convocatorias", __name__, url_prefix="/convocatorias")
+
+api_convocatoria_bp = Blueprint("api_convocatorias", __name__, url_prefix="/api/convocatorias")
+
+# ---------------------------------------------------------
+# GET /api/convocatorias  (con filtros)
+# ---------------------------------------------------------
 @convocatoria_bp.get("/")
-def convocatoria_list():
-    convocatorias = db.convocatorias  # lista completa
-    return render_template("convocatorias/list.html", convocatorias=convocatorias)
+def pagina_convocatorias():
+    return render_template(
+            "convocatorias/list.html", 
+            current_year=datetime.now().year
+        )
 
-
-@convocatoria_bp.get("/detalle/<int:convocatoria_id>")
-def convocatoria_detalle(convocatoria_id):
-    conv = db.get_convocatoria(convocatoria_id)
-
-    if not conv:
-        return jsonify({"ok": False, "msg": "Convocatoria no encontrada"}), 404
-    
-    return jsonify({"ok": True, "data": conv})
-
-@convocatoria_bp.post("/crear")
-def convocatoria_create():
-    data = request.form or request.get_json() or {}
-
-    tipo = data.get("tipo")
-    nombre = data.get("nombre")
-    fecha_inicio = data.get("fecha_inicio")
-    fecha_fin = data.get("fecha_fin")
-    estado = data.get("estado", "planificada")
-
-    if not tipo or not nombre or not fecha_inicio or not fecha_fin:
-        return jsonify({"ok": False, "msg": "Todos los campos son obligatorios"}), 400
-
-    nueva = db.add_convocatoria({
-        "tipo": tipo,
-        "nombre": nombre,
-        "fecha_inicio": fecha_inicio,
-        "fecha_fin": fecha_fin,
-        "estado": estado,
-    })
-
-    return jsonify({"ok": True, "msg": "Convocatoria creada", "data": nueva})
-
-@convocatoria_bp.post("/editar/<int:convocatoria_id>")
-def convocatoria_update(convocatoria_id):
-    data = request.form or request.get_json() or {}
-
-    conv = db.get_convocatoria(convocatoria_id)
-    if not conv:
-        return jsonify({"ok": False, "msg": "Convocatoria no encontrada"}), 404
-
-    updates = {
-        "nombre": data.get("nombre", conv["nombre"]),
-        "tipo": data.get("tipo", conv["tipo"]),
-        "fecha_inicio": data.get("fecha_inicio", conv["fecha_inicio"]),
-        "fecha_fin": data.get("fecha_fin", conv["fecha_fin"]),
-        "estado": data.get("estado", conv["estado"]),
+@api_convocatoria_bp.get("/")
+def api_listar_convocatorias():
+    filters = {
+        "year": request.args.get("year"),
+        "type": request.args.get("type"),
+        "status": request.args.get("status"),
+        "search": request.args.get("search")
     }
 
-    db.update_convocatoria(convocatoria_id, updates)
+    
+    convs = listar_convocatorias(filters)
 
-    return jsonify({"ok": True, "msg": "Convocatoria actualizada"})
+    response = [c.to_dict() for c in convs]
+
+    return jsonify(response)
+
+# ---------------------------------------------------------
+# POST /api/convocatorias
+# ---------------------------------------------------------
+@api_convocatoria_bp.post("/")
+def api_crear_convocatoria():
+    data = request.get_json()
+
+    try:
+        nueva = crear_convocatoria(data)
+        return jsonify({
+            "ok": True,
+            "msg": "Convocatoria creada",
+            "data": nueva.to_dict()
+        }), 201
+    except Exception as e:
+        return jsonify({"ok": False, "msg": str(e)}), 400
 
 
-@convocatoria_bp.delete("/eliminar/<int:convocatoria_id>")
-def convocatoria_delete(convocatoria_id):
-    ok = db.delete_convocatoria(convocatoria_id)
+# ---------------------------------------------------------
+# DELETE /api/convocatorias/<id>
+# ---------------------------------------------------------
+@api_convocatoria_bp.delete("/<int:conv_id>")
+def api_eliminar_conv(conv_id):
+    try:
+        eliminar_convocatoria(conv_id)
+        return jsonify({"ok": True, "msg": "Convocatoria eliminada"})
+    except Exception as e:
+        return jsonify({"ok": False, "msg": str(e)}), 400
 
-    if not ok:
-        return jsonify({"ok": False, "msg": "No existe"}), 404
-
-    return jsonify({"ok": True, "msg": "Convocatoria eliminada"})
 
