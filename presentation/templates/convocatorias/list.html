@@ -1,0 +1,210 @@
+{% extends "base.html" %}
+
+{% block content %}
+
+<div class="container-fluid py-4">
+    <!-- Encabezado con botón -->
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2 class="mb-0">
+            <i class="fas fa-calendar-week text-primary me-2"></i>
+            Gestión de Convocatorias
+        </h2>
+        <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#crearConvocatoriaModal">
+            <i class="fas fa-plus-circle me-2"></i>
+            Nueva Convocatoria
+        </button>
+    </div>
+    
+    <!-- Filtros -->
+    <div class="card shadow mb-4">
+        <div class="card-header py-3 d-flex justify-content-between align-items-center">
+            <h6 class="m-0 font-weight-bold text-primary">
+                <i class="fas fa-filter me-2"></i>Filtros de Búsqueda
+            </h6>
+            <button id="reset-filters" class="btn btn-sm btn-outline-secondary">
+                <i class="fas fa-redo-alt me-1"></i>Restablecer
+            </button>
+        </div>
+        <div class="card-body">
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-3 mb-3">
+                        <label for="year-filter" class="form-label">Año de la convocatoria</label>
+                        <select id="year-filter" class="form-select">
+                            {% for year in range(current_year, current_year - 5, -1) %}
+                            <option value="{{ year }}" {% if year == current_year %}selected{% endif %}>{{ year }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                                    
+                    <div class="col-md-3 mb-3">
+                        <label for="type-filter" class="form-label">Tipo de convocatoria</label>
+                        <select id="type-filter" class="form-select">
+                            <option value="all">Todos los tipos</option>
+                            <option value="normal">Normal</option>
+                            <option value="extraordinaria">Extraordinaria</option>
+                        </select>
+                    </div>
+                    
+                    <div class="col-md-3 mb-3">
+                        <label for="status-filter" class="form-label">Estado</label>
+                        <select id="status-filter" class="form-select">
+                            <option value="all">Todos los estados</option>
+                            <option value="planificada">Planificada</option>
+                            <option value="registro">Registro</option>
+                            <option value="prevalidacion">Pre-validación</option>
+                            <option value="validacion">Validación</option>
+                            <option value="finalizada">Finalizada</option>
+                        </select>
+                    </div>
+                    
+                    <div class="col-md-3 mb-3">
+                        <label for="search-filter" class="form-label">Buscar</label>
+                        <input type="text" id="search-filter" class="form-control" placeholder="Buscar convocatoria...">
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Información de resultados -->
+    <div class="alert alert-info d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <i class="fas fa-info-circle me-2"></i>
+            <span id="count-message">Mostrando <span id="count">0</span> convocatorias</span>
+        </div>
+        <small>Las convocatorias del año actual se muestran por defecto</small>
+    </div>
+    
+    <!-- Tabla de convocatorias -->
+    <div class="card shadow">
+        <div class="card-header py-3">
+            <h6 class="m-0 font-weight-bold text-primary">
+                <i class="fas fa-list me-2"></i>Lista de Convocatorias
+            </h6>
+        </div>
+        <div class="card-body">
+            <div class="table-responsive">
+                <table class="table table-hover" id="convocatorias-table">
+                    <thead class="table-dark">
+                        <tr>
+                            <th width="15%">Convocatoria</th>
+                            <th width="20%">Fecha de inicio</th>
+                            <th width="20%">Fecha de finalización</th>
+                            <th width="15%">Tipo</th>
+                            <th width="15%">Estado</th>
+                            <th width="20%" class="text-center">Acciones</th>
+                        </tr>
+                    </thead>
+                    <tbody id="convocatorias-body">
+                        
+                    </tbody>
+                </table>
+            </div>
+            
+            <!-- Mensaje cuando no hay resultados -->
+            <div id="no-results-message" class="text-center py-5" style="display: none;">
+                <i class="fas fa-folder-open fa-3x text-muted mb-3"></i>
+                <h5 class="text-muted">No se encontraron convocatorias</h5>
+                <p class="text-muted">Intenta con otros filtros de búsqueda</p>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal fade" id="crearConvocatoriaModal" tabindex="-1" aria-labelledby="crearConvocatoriaModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header bg-primary text-white">
+                    <h5 class="modal-title" id="crearConvocatoriaModalLabel">
+                        <i class="fas fa-plus-circle me-2"></i>Crear Nueva Convocatoria
+                    </h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="formCrearConvocatoria">
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label for="tipo_convocatoria" class="form-label">Tipo de Convocatoria *</label>
+                                <select class="form-select" id="tipo_convocatoria" name="tipo_convocatoria" required>
+                                    <option value="">Seleccionar tipo</option>
+                                    <option value="normal">Normal</option>
+                                    <option value="extraordinaria">Extraordinaria</option>
+                                </select>
+                                <div class="form-text">
+                                    <small>
+                                        <strong>Normal:</strong> Incluye trimestre (T1, T2, T3, T4)<br>
+                                        <strong>Extraordinaria:</strong> Solo incluye el año
+                                    </small>
+                                </div>
+                            </div>
+                            
+                            <div class="col-md-6 mb-3">
+                                <label for="anio" class="form-label">Año *</label>
+                                <input type="number" class="form-control" id="anio" name="anio" 
+                                       min="2025" max="2026" value="{{ current_year }}" required>
+                            </div>
+                        </div>
+                        
+                        <div class="row" id="trimestreContainer" style="display: none;">
+                            <div class="col-md-6 mb-3">
+                                <label for="trimestre" class="form-label">Trimestre *</label>
+                                <select class="form-select" id="trimestre" name="trimestre">
+                                    <option value="">Seleccionar trimestre</option>
+                                    <option value="T1">Primer Trimestre (T1)</option>
+                                    <option value="T2">Segundo Trimestre (T2)</option>
+                                    <option value="T3">Tercer Trimestre (T3)</option>
+                                    <option value="T4">Cuarto Trimestre (T4)</option>
+                                </select>
+                            </div>
+                        </div>
+                        
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label for="fecha_inicio" class="form-label">Fecha de Inicio *</label>
+                                <input type="date" class="form-control" id="fecha_inicio" name="fecha_inicio" required>
+                            </div>
+                            
+                            <div class="col-md-6 mb-3">
+                                <label for="fecha_fin" class="form-label">Fecha de Finalización *</label>
+                                <input type="date" class="form-control" id="fecha_fin" name="fecha_fin" required>
+                            </div>
+                        </div>
+                        
+                        <div class="row">
+                            <div class="col-md-12 mb-3">
+                                <label for="descripcion" class="form-label">Descripción (Opcional)</label>
+                                <textarea class="form-control" id="descripcion" name="descripcion" rows="3" 
+                                          placeholder="Descripción de la convocatoria..."></textarea>
+                            </div>
+                        </div>
+                        
+                        <div class="alert alert-info">
+                            <small>
+                                <i class="fas fa-info-circle me-1"></i>
+                                <strong>Recordatorio:</strong> Los estados de la convocatoria se gestionan automáticamente según las fechas:
+                                <ul class="mb-0 mt-2">
+                                    <li><strong>Planificada:</strong> Antes de la fecha de inicio</li>
+                                    <li><strong>Registro:</strong> Durante el período de fechas</li>
+                                    <li><strong>Finalizada:</strong> Después de la fecha de finalización</li>
+                                </ul>
+                            </small>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                    <button type="button" class="btn btn-primary" id="btnGuardarConvocatoria">
+                        <i class="fas fa-save me-1"></i>Guardar Convocatoria
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script type="module" src="{{ url_for('static', filename='js/convocatorias.js') }}"></script>
+{% endblock %}

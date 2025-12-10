@@ -62,7 +62,7 @@ def seed_convocatorias():
     for i in range(1, 5):
         convocatorias.append({
             'tipo': 'normal',
-            'ano': current_year,
+            'anio': current_year,
             'trimestre': i,
             'nombre': f'Convocatoria T{i} - {current_year}',
             'descripcion': f'Convocatoria del {i}° trimestre del año {current_year}',
@@ -73,17 +73,17 @@ def seed_convocatorias():
             'created_by': None
         })
 
-    convocatorias.append({
-        'tipo': 'extraordinaria',
-        'ano': current_year,
-        'nombre': f'Convocatoria Extraordinaria - {current_year}',
-        'descripcion': 'Convocatoria extraordinaria para proyectos especiales',
-        'fecha_inicio': f'{current_year}-07-01',
-        'fecha_fin': f'{current_year}-07-31',
-        'estado': 'planificada',
-        'publicada': False,
-        'created_by': None
-    })
+        convocatorias.append({
+            'tipo': 'extraordinaria',
+            'anio': current_year,
+            'nombre': f'Convocatoria Extraordinaria - {current_year}',
+            'descripcion': 'Convocatoria extraordinaria para proyectos especiales',
+            'fecha_inicio': f'{current_year}-07-01',
+            'fecha_fin': f'{current_year}-07-31',
+            'estado': 'planificada',
+            'publicada': False,
+            'created_by': None
+        })
 
     return convocatorias
 

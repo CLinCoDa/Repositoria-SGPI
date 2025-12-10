@@ -4,15 +4,22 @@ from data_layer.database.database import db
 from data_layer.database.seed_data import seed_users, seed_convocatorias, seed_solicitudes
 from presentation.routes.auth_routes import auth_bp
 from presentation.routes.dashboard_routes import dashboard_bp
-from presentation.routes.convocatorias_routes import convocatoria_bp
+from presentation.routes.convocatorias_routes import convocatoria_bp, api_convocatoria_bp
 
-app = Flask(__name__)
+app = Flask(
+    __name__,
+    template_folder="presentation/templates",
+    static_folder="presentation/static"
+)
 app.secret_key = "cambia_esta_clave_en_produccion"
+
+
 
 # Registrar blueprints
 app.register_blueprint(auth_bp)
 app.register_blueprint(dashboard_bp)
 app.register_blueprint(convocatoria_bp)
+app.register_blueprint(api_convocatoria_bp)
 
 # Rutas públicas para ejemplo
 PUBLIC_ENDPOINTS = {
@@ -36,14 +43,15 @@ def require_login():
             return jsonify({"ok": False, "msg": "autenticación requerida"}), 401
         return redirect(url_for("auth.login_page"))
 
-# Ruta protegida de ejemplo
 @app.get("/")
 def protected_index():
     user_id = session.get("user_id")
     if not user_id:
         return redirect(url_for("auth.login_page"))
-    user = db.get_user_by_id(user_id)
-    return f"<h3>Bienvenido {user.get('full_name', user.get('username'))}</h3><p>Role: {user.get('role')}</p><a href='/auth/logout'>Logout</a>"
+
+    # Usuario logueado → redirigir a la vista HTML de convocatorias
+    return redirect(url_for("dashboard.dashboard_home"))
+
 
 
 
@@ -84,4 +92,5 @@ if __name__ == "__main__":
     # Nota: si cambias persist_to_disk, recrea db con get_database(persist_to_disk=True)
     # aquí usamos el db singleton ya importado
     initialize_data_once()
+    print("Convocatorias cargadas:", db.convocatorias)
     app.run(debug=True, port=5000)
