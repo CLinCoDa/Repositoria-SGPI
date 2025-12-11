@@ -43,6 +43,7 @@ def login():
     session["user_id"] = user["id"]
     session["username"] = user["username"]
     session["role"] = user["role"]
+    session["email"] = user["email"]
 
     return jsonify({
         "success": True,
@@ -56,7 +57,5 @@ def login():
 @auth_bp.route("/logout")
 def logout():
     session.clear()
-    return jsonify({
-        "success": True,
-        "message": "Sesión cerrada."
-    })
+    return render_template("auth/login.html")
+

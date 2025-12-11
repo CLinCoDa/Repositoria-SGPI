@@ -1,0 +1,90 @@
+{% extends "base.html" %}
+
+{% block content %}
+<!-- Alertas y Notificaciones -->
+<div class="row mb-4">
+    <div class="col-12">
+        <div class="alert alert-warning d-flex justify-content-between align-items-center">
+            <div>
+                <i class="fas fa-exclamation-triangle me-2"></i>
+                Tienes 3 solicitudes con observaciones pendientes por responder
+            </div>
+            
+        </div>
+    </div>
+</div>
+
+<div class="row mb-4">
+    <div class="col-12">
+        <div id="metricsCarousel" class="carousel slide" data-bs-ride="carousel">
+            <!-- Indicadores -->
+            <div class="carousel-indicators">
+                <button type="button" data-bs-target="#metricsCarousel" data-bs-slide-to="0" class="active"></button>
+                <button type="button" data-bs-target="#metricsCarousel" data-bs-slide-to="1"></button>
+                <button type="button" data-bs-target="#metricsCarousel" data-bs-slide-to="2"></button>
+                <button type="button" data-bs-target="#metricsCarousel" data-bs-slide-to="3"></button>
+            </div>
+             <!-- Slides -->
+            <div class="carousel-inner rounded-3" style="height: 450px;">
+                <!-- Slide 1: Resumen General -->
+                <div class="carousel-item active">
+                    <img src="{{ url_for('static', filename='images/BANNER-1.png') }}" 
+                         class="d-block w-100 h-100" 
+                         style="object-fit: cover;"
+                         alt="Resumen de solicitudes">
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Recursos de Ayuda -->
+<div class="row mb-4">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header bg-primary text-white">
+                <h5 class="mb-0"><i class="fas fa-life-ring me-2"></i>Recursos de Ayuda y Soporte</h5>
+            </div>
+            <div class="card-body">
+                <div class="row justify-content-center">
+                    <div class="col-md-3 text-center mb-3">
+                        <a href="#" class="text-decoration-none">
+                            <div class="p-3 border rounded">
+                                <i class="fas fa-book fa-2x text-primary mb-2"></i>
+                                <h6>Guías de Uso</h6>
+                                <small class="text-muted">Manual completo del sistema</small>
+                            </div>
+                        </a>
+                    </div>
+                    <div class="col-md-3 text-center mb-3">
+                        <a href="#" class="text-decoration-none">
+                            <div class="p-3 border rounded">
+                                <i class="fas fa-video fa-2x text-primary mb-2"></i>
+                                <h6>Videos Tutoriales</h6>
+                                <small class="text-muted">Funcionamiento general</small>
+                            </div>
+                        </a>
+                    </div>
+                    <div class="col-md-3 text-center mb-3">
+                        <a href="#" class="text-decoration-none">
+                            <div class="p-3 border rounded">
+                                <i class="fas fa-calendar-alt fa-2x text-primary mb-2"></i>
+                                <h6>Cronograma</h6>
+                                <small class="text-muted">Solicitudes 2025</small>
+                            </div>
+                        </a>
+                    </div>
+                </div>
+                <div class="mt-3 p-3 bg-light rounded">
+                    <h6><i class="fas fa-envelope me-2"></i>Soporte Técnico</h6>
+                    <p class="mb-0">En caso de necesitar soporte con respecto al SGPI enviar un correo solicitando soporte adjuntando una imagen del error al correo: 
+                        <strong>soporte.cati@ug.edu.ec</strong>
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+{% endblock %}

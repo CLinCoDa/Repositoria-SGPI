@@ -18,7 +18,9 @@ class ConvocatoriaRepository:
     def create(data: dict):
         # validar con modelo
         conv = from_dict(data)
-        saved = db.add_convocatoria(Convocatoria.to_dict(conv))
+        
+        saved = db.add_convocatoria(conv.to_dict())
+
         return from_dict(saved)
 
     @staticmethod
@@ -31,7 +33,7 @@ class ConvocatoriaRepository:
         merged = {**existing, **updates}
         conv = from_dict(merged)  # validación
 
-        updated = db.update_convocatoria(id, Convocatoria.to_dict(conv))
+        updated = db.update_convocatoria(id, conv.to_dict())
         return from_dict(updated)
 
     @staticmethod

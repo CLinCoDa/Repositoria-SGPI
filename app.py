@@ -5,6 +5,7 @@ from data_layer.database.seed_data import seed_users, seed_convocatorias, seed_s
 from presentation.routes.auth_routes import auth_bp
 from presentation.routes.dashboard_routes import dashboard_bp
 from presentation.routes.convocatorias_routes import convocatoria_bp, api_convocatoria_bp
+from presentation.routes.solicitudes_routes import solicitudes_bp, api_solicitudes_bp
 
 app = Flask(
     __name__,
@@ -20,6 +21,8 @@ app.register_blueprint(auth_bp)
 app.register_blueprint(dashboard_bp)
 app.register_blueprint(convocatoria_bp)
 app.register_blueprint(api_convocatoria_bp)
+app.register_blueprint(solicitudes_bp)
+app.register_blueprint(api_solicitudes_bp)
 
 # Rutas públicas para ejemplo
 PUBLIC_ENDPOINTS = {
@@ -92,5 +95,5 @@ if __name__ == "__main__":
     # Nota: si cambias persist_to_disk, recrea db con get_database(persist_to_disk=True)
     # aquí usamos el db singleton ya importado
     initialize_data_once()
-    print("Convocatorias cargadas:", db.convocatorias)
+    print("Convocatorias cargadas:", db.solicitudes)
     app.run(debug=True, port=5000)

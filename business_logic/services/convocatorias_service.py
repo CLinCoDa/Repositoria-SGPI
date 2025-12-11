@@ -1,4 +1,4 @@
-# business_logic/services/convocatoria_service.py
+# business_logic/services/convocatorias_service.py
 
 from data_layer.repositories.convocatoria_repository import ConvocatoriaRepository
 
@@ -32,8 +32,12 @@ def listar_convocatorias(filters=None):
     return convs
 
 
-def crear_convocatoria(data):
+def crear_convocatoria(data: dict):
+
     return ConvocatoriaRepository.create(data)
+
+def editar_convocatoria(id: int,data: dict):
+    return ConvocatoriaRepository.update(id,data)
 
 def eliminar_convocatoria(id):
     return ConvocatoriaRepository.delete(id)

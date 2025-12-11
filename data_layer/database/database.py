@@ -98,19 +98,15 @@ class Database:
         if self.persist_to_disk:
             self._save_convocatorias()
         return conv
-
-    def get_convocatoria(self, conv_id: int) -> Optional[Dict]:
-        return next((c for c in self.convocatorias if c["id"] == conv_id), None)
     
     def get_convocatoria_by_id(self, conv_id: int) -> Optional[Dict]:
         return next((c for c in self.convocatorias if c["id"] == conv_id), None)
 
     def update_convocatoria(self, conv_id: int, updates: Dict) -> Optional[Dict]:
-        c = self.get_convocatoria(conv_id)
+        c = self.get_convocatoria_by_id(conv_id)
         if not c:
             return None
         c.update(updates)
-        c["updated_at"] = datetime.now().isoformat()
         if self.persist_to_disk:
             self._save_convocatorias()
         return c
@@ -140,6 +136,13 @@ class Database:
 
     def get_solicitud_by_id(self, sol_id: int) -> Optional[Dict]:
         return next((s for s in self.solicitudes if s["id"] == sol_id), None)
+    
+    def delete_solicitud(self, sol_id: int) -> bool:
+        before = len(self.solicitudes)
+        self.solicitudes = [s for s in self.solicitudes if s["id"] != sol_id]
+        if self.persist_to_disk:
+            self._save_solicitudes()
+        return len(self.solicitudes) < before
 
     # ----------------- STATS & SEARCH -----------------
     def get_stats(self) -> Dict:

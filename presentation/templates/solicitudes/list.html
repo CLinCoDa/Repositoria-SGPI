@@ -1,0 +1,189 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container-fluid py-4">
+    <!-- Encabezado con botón -->
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2 class="mb-0">
+            <i class="fas fa-file-alt text-primary me-2"></i>
+            Mis solicitudes
+        </h2>
+        <a href="{{ url_for('solicitudes.pagina_crear_solicitud') }}" class="btn btn-primary">
+            <i class="fas fa-plus-circle me-2"></i>
+            Nueva solicitud
+        </a>
+    </div>
+
+    <!-- Filtros y búsqueda -->
+    <div class="card mb-4">
+        <div class="card-header py-3 d-flex justify-content-between align-items-center">
+            <h6 class="m-0 font-weight-bold text-primary">
+                <i class="fas fa-filter me-2"></i>Filtros de Búsqueda
+            </h6>
+            <button id="reset-filters" class="btn btn-sm btn-outline-secondary">
+                <i class="fas fa-redo-alt me-1"></i>Restablecer
+            </button>
+        </div>
+
+        <div class="card-body">
+            <div class="row g-3">
+                <div class="col-md-3">
+                    <label class="form-label">Estado</label>
+                    <select class="form-select" id="estado-filter">
+                        <option value="">Todos los estados</option>
+                        <option value="borrador">Borrador</option>
+                        <option value="enviada">Enviada</option>
+                        <option value="observada">Observada</option>
+                        <option value="validada">Validada</option>
+                        <option value="denegada">Devuelto</option>
+                    </select>
+                </div>
+                <div class="col-md-3">
+                    <label class="form-label">Convocatoria</label>
+                    <select class="form-select" id="convocatoria-filter">
+                        <option value="">Todas las convocatorias</option>
+                        {% for conv in convocatorias %}
+                        <option value="{{ conv.id }}">{{ conv.nombre }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="col-md-3">
+                    <label class="form-label">Tipo de PI</label>
+                    <select class="form-select" id="tipoPI-filter">
+                        <option value="">Todos los tipos</option>
+                        <option value="diseño_industrial">Diseño Industrial</option>
+                        <option value="derecho_autor">Derechos de Autor</option>
+                        <option value="marca">Marca</option>
+                        <option value="patente">Patente</option>
+                    </select>
+                </div>
+                <div class="col-md-3">
+                    <label class="form-label">Búsqueda</label>
+                    <div class="input-group">
+                        <input type="text" class="form-control" placeholder="Título o código..." id="search-filter">
+                        <button class="btn btn-outline-secondary" type="button" id="btnSearch">
+                            <i class="fas fa-search"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Estadísticas rápidas -->
+    <div class="row mb-4">
+        <div class="col-md-2 col-sm-6">
+            <div class="card bg-light border-0">
+                <div class="card-body text-center">
+                    <h3 class="text-primary">{{ total_solicitudes }}</h3>
+                    <p class="mb-0">Total</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-2 col-sm-6">
+            <div class="card bg-light border-0">
+                <div class="card-body text-center">
+                    <h3 class="text-warning">{{ borradores }}</h3>
+                    <p class="mb-0">Borradores</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-2 col-sm-6">
+            <div class="card bg-light border-0">
+                <div class="card-body text-center">
+                    <h3 class="text-info">{{ enviadas }}</h3>
+                    <p class="mb-0">Enviadas</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-2 col-sm-6">
+            <div class="card bg-light border-0">
+                <div class="card-body text-center">
+                    <h3 class="text-danger">{{ observadas }}</h3>
+                    <p class="mb-0">Observadas</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-2 col-sm-6">
+            <div class="card bg-light border-0">
+                <div class="card-body text-center">
+                    <h3 class="text-success">{{ validadas }}</h3>
+                    <p class="mb-0">Validadas</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-2 col-sm-6">
+            <div class="card bg-light border-0">
+                <div class="card-body text-center">
+                    <h3 class="text-secondary">{{ denegadas }}</h3>
+                    <p class="mb-0">Denegadas</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Tabla de solicitudes -->
+    <div class="card">
+        <div class="card-body">
+            <div class="table-responsive">
+                <table class="table table-hover" id="solicitudesTable">
+                    <thead>
+                        <tr>
+                            <th>Código</th>
+                            <th>Convocatoria</th>
+                            <th>Tipo de PI</th>
+                            <th>Título</th>
+                            <th>Fecha de envío</th>
+                            <th>Estado</th>
+                            <th>Acciones</th>
+                        </tr>
+                    </thead>
+                    <tbody id="solicitudes-body">
+                       
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- Mensaje cuando no hay resultados -->
+            <div id="no-results-message" class="text-center py-5" style="display: none;">
+                <i class="fas fa-folder-open fa-3x text-muted mb-3"></i>
+                <h5 class="text-muted">No se encontraron convocatorias</h5>
+                <p class="text-muted">Intenta con otros filtros de búsqueda</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal de confirmación para eliminar -->
+<div class="modal fade" id="confirmarEliminarModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header bg-danger text-white">
+                <h5 class="modal-title">
+                    <i class="fas fa-exclamation-triangle me-2"></i>
+                    Confirmar eliminación
+                </h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <p>¿Está seguro de eliminar la solicitud <strong id="codigoSolicitud"></strong>?</p>
+                <p class="text-danger">
+                    <i class="fas fa-info-circle me-1"></i>
+                    Esta acción no se puede deshacer.
+                </p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                <form id="formEliminar" method="POST" style="display: inline;">
+                    <input type="hidden" name="csrf_token" value="">
+                    <button type="submit" class="btn btn-danger">Eliminar definitivamente</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script type="module" src="{{ url_for('static', filename='js/solicitudes.js') }}"></script>
+{% endblock %}

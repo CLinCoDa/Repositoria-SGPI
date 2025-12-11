@@ -21,7 +21,7 @@
         
         body {
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background-color: #f8f9fa;
+            background-color: rgb(233, 233, 233);
         }
         
         .sidebar {
@@ -29,8 +29,20 @@
             color: white;
             min-height: 100vh;
             position: fixed;
-            width: 250px;
+            width: 350px;
             transition: all 0.3s;
+        }
+
+        .logo {
+            text-align: center;
+            margin-bottom: 25px;
+            background-color: white;
+        }
+
+        .logo img {
+            max-width: 250px;
+            height: auto;
+            color: white;
         }
         
         .sidebar .nav-link {
@@ -50,10 +62,22 @@
             width: 25px;
             text-align: center;
         }
-        
+
         .main-content {
-            margin-left: 250px;
+            margin-left: 350px;
             transition: all 0.3s; 
+        }
+
+        .header {
+            background-color: #f7f7f7;
+            height: 90px;
+            align-items: center;
+            border-left: 1px solid lightgrey;
+        }
+
+        .contend {
+            background-color: white;
+            padding: 50px;
         }
         
         @media (max-width: 768px) {
@@ -73,11 +97,10 @@
 </head>
 <body>
     <!-- Sidebar -->
+    <body>
     <div class="sidebar">
-        <div class="p-3">
-            <h4 class="text-center mb-4">
-               Universidad de Guayaquil
-            </h4>
+        <div class="logo p-3">
+            <img src="{{ url_for('static', filename='images/UgHorizontalColor.svg') }}" alt="Logo Universidad">
         </div>
         
         <nav class="nav flex-column">
@@ -85,9 +108,39 @@
                 <i class="fas fa-tachometer-alt"></i> Dashboard
             </a>
 
+            {% if session.get('role') == 'coordinador' %}
             <a class="nav-link active" href="{{ url_for('convocatorias.pagina_convocatorias') }}">
                 <i class="fas fa-calendar-week "></i> Convocatorias
             </a>
+            {% elif session.get('role') == 'docente' %}
+            <a class="nav-link" 
+                data-bs-toggle="collapse" 
+                href="#submenuSolicitudes" 
+                role="button" 
+                aria-expanded="false" 
+                aria-controls="submenuSolicitudes">
+                
+                <i class="fas fa-calendar-week me-2"></i> Solicitudes 
+                <i class="fas fa-caret-down float-end"></i> 
+            </a>
+            
+            <div class="collapse" id="submenuSolicitudes">
+                <ul class="nav flex-column ps-3"> <li class="nav-item">
+                        <a class="nav-link" href="{{ url_for('solicitudes.pagina_registro') }}">
+                            <i class="fas fa-file-alt me-2"></i> Registro
+                        </a>
+                    </li>
+                    
+                    <li class="nav-item">
+                        <a class="nav-link" >
+                            <i class="fas fa-eye me-2"></i> Observaciones
+                        </a>
+                    </li>
+                    
+                </ul>
+            </div>
+            {% endif %}
+            
             
             <div class="mt-4 p-3">
                 <a class="nav-link text-danger" href="{{ url_for('auth.logout') }}">
@@ -112,12 +165,22 @@
                         <div class="dropdown">
                             <button class="btn btn-outline-primary dropdown-toggle" type="button" data-bs-toggle="dropdown">
                                 <i class="fas fa-user me-2"></i>
-                                Administrador 
+                                {{ session.get('email') }}
                             </button>
                             <ul class="dropdown-menu dropdown-menu-end">
-                                <li><a class="dropdown-item" href="#"><i class="fas fa-cog me-2"></i>Configuración</a></li>
+                                {% if session.get('role') == 'administrador' %}
+                                <li>
+                                    <a class="dropdown-item" href="#">
+                                        <i class="fas fa-cog me-2"></i>Configuración
+                                    </a>
+                                </li>
                                 <li><hr class="dropdown-divider"></li>
-                                <li><a class="dropdown-item text-danger" href="{{ url_for('auth.logout') }}"><i class="fas fa-sign-out-alt me-2"></i>Cerrar Sesión</a></li>
+                                {% endif %}
+                                <li>
+                                    <a class="dropdown-item text-danger" href="{{ url_for('auth.logout') }}">
+                                        <i class="fas fa-sign-out-alt me-2"></i>Cerrar Sesión
+                                    </a>
+                                </li>
                             </ul>
                         </div>
                     </div>
@@ -126,7 +189,7 @@
         </div>
 
         <!-- Content Area -->
-        <div class="container-fluid">
+        <div class="contend container-fluid">
             {% block content %}{% endblock %}
         </div>
     </div>
