@@ -1,0 +1,320 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container-main">
+    <div class="form-header">
+        <h1>FORMULARIO DE SOLICITUD PARA REGISTRO DE PATENTES</h1>
+    </div>
+    
+    <div class="progress-container">
+        <div class="progress-steps">
+            <div class="progress-bar" id="progress-bar"></div>
+            <div class="step active" data-step="1">
+                <div class="step-circle">1</div>
+                <div class="step-label">Información Básica</div>
+            </div>
+            <div class="step" data-step="2">
+                <div class="step-circle">2</div>
+                <div class="step-label">Solicitantes</div>
+            </div>
+            <div class="step" data-step="3">
+                <div class="step-circle">3</div>
+                <div class="step-label">Inventores</div>
+            </div>
+            <div class="step" data-step="4">
+                <div class="step-circle">4</div>
+                <div class="step-label">Detalles Técnicos</div>
+            </div>
+            <div class="step" data-step="5">
+                <div class="step-circle">5</div>
+                <div class="step-label">Documentación</div>
+            </div>
+        </div>
+    </div>
+    
+    <form id="patentForm" action="/registro-patente" method="POST" enctype="multipart/form-data">
+        <div class="form-sections-container">
+            <!-- Sección 1: Información Básica -->
+            <div class="form-section active" id="section-1">
+                <h2 class="section-title">Información Básica de la Patente</h2>
+                
+                <div class="form-card">
+                    <h5>Tipo de Patente</h5>
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <div class="form-check">
+                                <input class="form-check-input" type="radio" name="tipo_patente" id="patenteInvencion" value="Patente de Invención" required>
+                                <label class="form-check-label" for="patenteInvencion">Patente de Invención</label>
+                            </div>
+                            <div class="form-check">
+                                <input class="form-check-input" type="radio" name="tipo_patente" id="patenteInvencionPCT" value="Patente de Invención PCT en Fase Nacional">
+                                <label class="form-check-label" for="patenteInvencionPCT">Patente de Invención PCT en Fase Nacional</label>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="form-check">
+                                <input class="form-check-input" type="radio" name="tipo_patente" id="modeloUtilidad" value="Modelo de Utilidad">
+                                <label class="form-check-label" for="modeloUtilidad">Modelo de Utilidad</label>
+                            </div>
+                            <div class="form-check">
+                                <input class="form-check-input" type="radio" name="tipo_patente" id="disenoIndustrial" value="Diseño Industrial">
+                                <label class="form-check-label" for="disenoIndustrial">Diseño Industrial</label>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="form-card">
+                    <h5>Título y Clasificación</h5>
+                    <div class="mb-3">
+                        <label for="tituloPatente" class="form-label required-field">Título de la Patente</label>
+                        <input type="text" class="form-control" id="tituloPatente" name="titulo_patente" required>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="clasificacionPatente" class="form-label required-field">Clasificación Internacional de Patentes</label>
+                        <input type="text" class="form-control" id="clasificacionPatente" name="clasificacion_patente" required>
+                        <small class="form-text text-muted">Si no conoce la clasificación puede consultarla <a href="#" target="_blank">aquí</a>.</small>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Sección 2: Solicitantes -->
+            <div class="form-section" id="section-2">
+                <h2 class="section-title">Solicitantes</h2>
+                
+                <div class="info-note">
+                    <strong>Nota:</strong> Los resultados de investigación en relación de dependencia hacen que el solicitante sea la institución.
+                </div>
+                
+                <div class="form-card" id="solicitante-principal">
+                    <h5>Solicitante Principal</h5>
+                    
+                    <div class="mb-3">
+                        <label class="form-label required-field">Tipo de Identificación</label>
+                        <div class="row">
+                            <div class="col-auto">
+                                <div class="form-check form-check-inline">
+                                    <input class="form-check-input" type="radio" name="tipo_identificacion_1" id="cedula_1" value="Cédula">
+                                    <label class="form-check-label" for="cedula_1">Cédula</label>
+                                </div>
+                            </div>
+                            <div class="col-auto">
+                                <div class="form-check form-check-inline">
+                                    <input class="form-check-input" type="radio" name="tipo_identificacion_1" id="ruc_1" value="RUC" checked>
+                                    <label class="form-check-label" for="ruc_1">RUC</label>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label for="no_identificacion_1" class="form-label required-field">No. de Identificación</label>
+                            <input type="text" class="form-control" id="no_identificacion_1" name="no_identificacion_1" required>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label for="pais_nacionalidad_1" class="form-label required-field">País de Nacionalidad</label>
+                            <input type="text" class="form-control" id="pais_nacionalidad_1" name="pais_nacionalidad_1" required value="Ecuador">
+                        </div>
+                    </div>
+                    
+                    <div class="row">
+                        <div class="col-md-8 mb-3">
+                            <label for="nombre_1" class="form-label required-field">Nombre/Razón Social</label>
+                            <input type="text" class="form-control" id="nombre_1" name="nombre_1" required value="UNIVERSIDAD DE GUAYAQUIL">
+                        </div>
+                        <div class="col-md-4 mb-3">
+                            <label for="provincia_residencia_1" class="form-label">Provincia de Residencia</label>
+                            <input type="text" class="form-control" id="provincia_residencia_1" name="provincia_residencia_1">
+                        </div>
+                    </div>
+                </div>
+                
+                <div id="solicitantes-adicionales-container"></div>
+                
+                <div class="text-center mt-3">
+                    <button type="button" class="btn btn-outline-primary" id="btn-agregar-solicitante">
+                        <i class="fas fa-plus"></i> Añadir otro Solicitante
+                    </button>
+                </div>
+            </div>
+            
+            <!-- Sección 3: Inventores/Diseñadores -->
+            <div class="form-section" id="section-3">
+                <h2 class="section-title">Inventores/Diseñadores</h2>
+                
+                <div class="info-note">
+                    <strong>Inventor:</strong> Individuo que idea, crea o concibe algo.<br>
+                    <strong>Diseñador:</strong> Profesional que ejerce la profesión del diseño.
+                </div>
+                
+                <div class="form-card" id="inventor-principal">
+                    <h5>Inventor/Diseñador 1</h5>
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label for="nombre_inventor_1" class="form-label required-field">Nombre Completo</label>
+                            <input type="text" class="form-control" id="nombre_inventor_1" name="nombre_inventor_1" required>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label for="email_inventor_1" class="form-label required-field">Email</label>
+                            <input type="email" class="form-control" id="email_inventor_1" name="email_inventor_1" required>
+                        </div>
+                    </div>
+                </div>
+                
+                <div id="inventores-adicionales-container"></div>
+                
+                <div class="text-center mt-3">
+                    <button type="button" class="btn btn-outline-primary" id="btn-agregar-inventor">
+                        <i class="fas fa-plus"></i> Añadir otro Inventor/Diseñador
+                    </button>
+                </div>
+            </div>
+            
+            <!-- Sección 4: Detalles Técnicos -->
+            <div class="form-section" id="section-4">
+                <h2 class="section-title">Detalles Técnicos y Resumen</h2>
+                
+                <div class="form-card">
+                    <h5>Información Adicional</h5>
+                    <div class="mb-4">
+                        <label for="resumen" class="form-label required-field">Resumen</label>
+                        <textarea class="form-control" id="resumen" name="resumen" rows="4" required placeholder="Describe el producto a patentar, su uso, funcionamiento, utilidad..."></textarea>
+                        <small class="form-text text-muted">Describe claramente la invención, su uso y utilidad.</small>
+                    </div>
+                    
+                    <div class="mb-4">
+                        <label for="observaciones" class="form-label">Observaciones (opcional)</label>
+                        <textarea class="form-control" id="observaciones" name="observaciones" rows="3" placeholder="Observaciones adicionales..."></textarea>
+                    </div>
+                </div>
+                
+                <div class="form-card">
+                    <h5>Información de Prioridad (si aplica)</h5>
+                    <div class="row">
+                        <div class="col-md-4 mb-3">
+                            <label for="pais_prioridad" class="form-label">País</label>
+                            <input type="text" class="form-control" id="pais_prioridad" name="pais_prioridad">
+                        </div>
+                        <div class="col-md-4 mb-3">
+                            <label for="numero_prioridad" class="form-label">Número</label>
+                            <input type="text" class="form-control" id="numero_prioridad" name="numero_prioridad">
+                        </div>
+                        <div class="col-md-4 mb-3">
+                            <label for="fecha_prioridad" class="form-label">Fecha</label>
+                            <input type="date" class="form-control" id="fecha_prioridad" name="fecha_prioridad">
+                        </div>
+                    </div>
+                    <small class="form-text text-muted">Complete solo si es Solicitud Extranjera o Patente PCT.</small>
+                </div>
+                
+                <div class="form-card">
+                    <h5>Procedimiento Biológico (si aplica)</h5>
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label for="lugar_deposito" class="form-label">Lugar de depósito</label>
+                            <input type="text" class="form-control" id="lugar_deposito" name="lugar_deposito">
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label for="fecha_deposito" class="form-label">Fecha de depósito</label>
+                            <input type="date" class="form-control" id="fecha_deposito" name="fecha_deposito">
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Sección 5: Documentación -->
+            <div class="form-section" id="section-5">
+                <h2 class="section-title">Documentación y Envío</h2>
+                
+                <div class="form-card">
+                    <h5>Documentos Obligatorios</h5>
+                    <p class="text-muted mb-3">Cada archivo debe tener extensión .pdf, con un tamaño máximo de 16 MB.</p>
+                    
+                    <div class="mb-3">
+                        <label class="form-label required-field">Comprobante de Tasa de Mantenimiento (Solicitante)</label>
+                        <input type="file" class="form-control" name="anexo_tasa" required accept=".pdf">
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label class="form-label required-field">Memoria Técnica (Inventor/Diseñador)</label>
+                        <input type="file" class="form-control" name="anexo_memoria" required accept=".pdf">
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label class="form-label required-field">Reivindicaciones (Inventor/Diseñador)</label>
+                        <input type="file" class="form-control" name="anexo_reivindicaciones" required accept=".pdf">
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label class="form-label required-field">Dibujos (Inventor/Diseñador)</label>
+                        <input type="file" class="form-control" name="anexo_dibujos" required accept=".pdf">
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label class="form-label required-field">Declaración Juramentada (Contrato de Cesión de Derechos)</label>
+                        <input type="file" class="form-control" name="anexo_declaracion" required accept=".pdf">
+                    </div>
+                </div>
+                
+                <div class="form-card">
+                    <h5>Documentos Opcionales</h5>
+                    <div class="mb-3">
+                        <label for="archivo_imagenes" class="form-label">Archivo de imágenes/Dibujos adicionales (PDF)</label>
+                        <input class="form-control" type="file" id="archivo_imagenes" name="archivo_imagenes" accept=".pdf">
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="archivo_descuento" class="form-label">Documento Habilitante de Descuento (opcional)</label>
+                        <input class="form-control" type="file" id="archivo_descuento" name="archivo_descuento" accept=".pdf">
+                    </div>
+                </div>
+                
+                <div class="step-summary">
+                    <h6>Resumen de su solicitud</h6>
+                    <div id="form-summary">
+                        <!-- El resumen se generará automáticamente con JavaScript -->
+                    </div>
+                </div>
+                
+                <div class="form-check mt-4">
+                    <input class="form-check-input" type="checkbox" id="confirmacion" required>
+                    <label class="form-check-label" for="confirmacion">
+                        Confirmo que toda la información proporcionada es verídica y acepto los términos de la solicitud.
+                    </label>
+                </div>
+            </div>
+        </div>
+        
+        <div class="form-footer">
+            <button type="button" class="btn btn-prev" id="btn-prev" disabled>
+                <i class="fas fa-arrow-left"></i> Anterior
+            </button>
+            
+            <div>
+                <span id="step-counter">Paso 1 de 5</span>
+            </div>
+            
+            <button type="button" class="btn btn-next" id="btn-next">
+                Siguiente <i class="fas fa-arrow-right"></i>
+            </button>
+            
+            <button type="submit" class="btn btn-submit" id="btn-submit" style="display: none;">
+                <i class="fas fa-paper-plane"></i> Enviar Solicitud
+            </button>
+        </div>
+    </form>
+    
+    <footer class="text-center py-3 border-top text-muted small">
+        <p class="mb-1">Elaborado por: Gestoría del Centro de Apoyo a la Tecnología y la Innovación de la Universidad de Guayaquil, CATI UG</p>
+        <p>Revisado por: Responsables del CATI UG</p>
+    </footer>
+</div>
+
+{% endblock %}
+
+{% block scripts %}
+<script type="module" src="{{ url_for('static', filename='js/formulario_solicitud.js') }}"></script>
+{% endblock %}
+    

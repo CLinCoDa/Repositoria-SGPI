@@ -2,7 +2,7 @@ from flask import session, redirect, url_for, flash, request, jsonify
 from functools import wraps
 
 # Asume que 'db.get_user(user_id)' devuelve el objeto de usuario con el campo 'role'
-from app import db # Asegúrate de que db es accesible
+from data_layer.database.database import db # Asegúrate de que db es accesible
 
 def login_required(f):
     @wraps(f)
